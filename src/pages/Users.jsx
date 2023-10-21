@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 
 const UsersComponent = () => {
 	const [users, setUsers] = useState([]);
@@ -48,6 +48,19 @@ const UsersComponent = () => {
 		}
 	}, [searchQuery, users]);
 
+	const deleteUser = async (userId) => {
+		try {
+			const userRef = doc(db, "users", userId);
+			await deleteDoc(userRef);
+			const updatedUsers = users.filter((user) => user.id !== userId);
+			setUsers(updatedUsers);
+			setFilteredUsers(updatedUsers);
+		} catch (error) {
+			console.error("Error deleting user:", error);
+			setError("Error while deleting user.");
+		}
+	};
+
 	return (
 		<div className='w-full px-9 mt-9 p-4 bg-slate-100 shadow-lg rounded-lg'>
 			<h2 className='text-xl font-bold mb-4'>User Details</h2>
@@ -71,10 +84,7 @@ const UsersComponent = () => {
 								<th className='border border-gray-300 px-6 py-3'>Name</th>
 								<th className='border border-gray-300 px-6 py-3'>Email</th>
 								<th className='border border-gray-300 px-6 py-3'>Balance</th>
-								<th className='border border-gray-300 px-6 py-3'>
-									Edit Balance
-								</th>
-								{/* Add more fields as needed */}
+								<th className='border border-gray-300 px-6 py-3'>Actions</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -95,6 +105,11 @@ const UsersComponent = () => {
 												Edit Balance
 											</button>
 										</a>
+										<button
+											onClick={() => deleteUser(user.id)}
+											className='ml-3 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'>
+											Delete
+										</button>
 									</td>
 								</tr>
 							))}
